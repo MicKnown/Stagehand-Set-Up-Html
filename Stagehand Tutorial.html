@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete AI Automation Guide | StageHand + Ollama</title>
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --secondary: #6366f1;
+            --accent: #10b981;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.8;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(45deg, var(--background), #1a1f36);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        h1, h2 {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .prerequisites {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+        }
+
+        .prerequisites::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            filter: drop-shadow(0 0 20px rgba(124, 58, 237, 0.3));
+        }
+
+        .step {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            filter: drop-shadow(0 0 20px rgba(124, 58, 237, 0.3));
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        pre {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+        }
+
+        pre::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            pointer-events: none;
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.1);
+        }
+
+        .code-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .note {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .note::before {
+            content: 'ℹ️';
+            position: absolute;
+            left: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Browser Automation Guide</h1>
+
+    <div class="prerequisites">
+        <h2>🎯 Prerequisites</h2>
+        <ul>
+            <li>🖥️ Node.js v18+ installed</li>
+            <li>🤖 Ollama running locally</li>
+            <li>📦 At least 8GB free memory</li>
+            <li>🌐 Stable internet connection</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3>🛠️ Step 1: System Setup</h3>
+        <pre><code class="language-bash"># Install Node.js (using nvm recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+nvm install --lts
+
+# Install Ollama (Linux example)
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Download AI model
+ollama pull llama2</code></pre>
+    </div>
+
+    <div class="step">
+        <h3>🚀 Step 2: Project Setup</h3>
+        <pre><code class="language-bash"># Create new StageHand project
+npx create-browser-app@latest my-ai-agent
+
+# Navigate to project directory
+cd my-ai-agent
+
+# Install required dependencies
+npm install @ai-sdk/ollama @playwright/test</code></pre>
+    </div>
+
+    <div class="step">
+        <h3>⚙️ Step 3: Configuration</h3>
+        <p>Edit <code>src/main.ts</code>:</p>
+        <pre><code class="language-typescript">// Import required modules
+import { createBrowserApp } from '@stagehand/core';
+import { ollama } from '@ai-sdk/ollama';
+
+// Configure Ollama integration
+const app = createBrowserApp({
+  ai: ollama({
+    baseUrl: 'http://localhost:11434/v1', // Ollama API endpoint
+    model: 'llama2' // Your chosen model
+  })
+});
+
+// Add browser automation script
+app.act('News Collector', async (page) => {
+  // Navigate to target website
+  await page.goto('https://news.ycombinator.com');
+  
+  // Extract top 5 headlines
+  const headlines = await page.evaluate(() => 
+    Array.from(document.querySelectorAll('.titleline'))
+      .slice(0, 5)
+      .map(el => el.textContent)
+  );
+  
+  return { headlines };
+});</code></pre>
+    </div>
+
+    <div class="step">
+        <h3>🚦 Step 4: Execution</h3>
+        <pre><code class="language-bash"># First terminal: Start Ollama service
+ollama serve
+
+# Second terminal: Run automation
+npm run start
+
+# Expected output:
+# ✔ Browser launched
+# ✔ Navigation completed
+# ✔ Headlines extracted
+# { headlines: [...] }</code></pre>
+    </div>
+
+    <div class="note">
+        <strong>Pro Tip:</strong> Use <code>page.screenshot()</code> to debug browser interactions
+    </div>
+
+    <div class="step">
+        <h3>🔧 Troubleshooting</h3>
+        <pre><code class="language-bash"># Common issues:
+# 1. Port conflict - ensure Ollama's port 11434 is free
+lsof -i :11434
+
+# 2. Missing browsers - install Playwright browsers
+npx playwright install
+
+# 3. Model not found - verify installed models
+ollama list</code></pre>
+    </div>
+
+    <footer>
+        <p>© 2024 AI Automation Guide | MIT License</p>
+    </footer>
+</body>
+</html>
