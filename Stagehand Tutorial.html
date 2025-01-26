@@ -6,6 +6,7 @@
     <title>Complete AI Automation Guide | StageHand + Ollama</title>
     <style>
         :root {
+            /* Dark theme (default) */
             --primary: #7c3aed;
             --secondary: #6366f1;
             --accent: #10b981;
@@ -14,15 +15,25 @@
             --text: #f8fafc;
         }
 
+        :root[data-theme="light"] {
+            --primary: #6d28d9;
+            --secondary: #4f46e5;
+            --accent: #059669;
+            --background: #f8fafc;
+            --surface: #f1f5f9;
+            --text: #0f172a;
+        }
+
         body {
             font-family: 'Inter', system-ui, sans-serif;
             line-height: 1.8;
             max-width: 1000px;
             margin: 0 auto;
             padding: 2rem;
-            background: linear-gradient(45deg, var(--background), #1a1f36);
+            background: linear-gradient(45deg, var(--background), var(--surface));
             color: var(--text);
             min-height: 100vh;
+            transition: all 0.3s ease;
         }
 
         h1, h2 {
@@ -151,14 +162,66 @@
             padding: 2rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .social-links a {
+            color: var(--text);
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            transition: all 0.3s ease;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+        }
+
+        .social-links a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        /* Add these new styles */
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 0.75rem;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
+            color: var(--text);
+        }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        🌓
+    </button>
+
     <h1>AI Browser Automation Guide</h1>
 
     <div class="prerequisites">
         <h2>🎯 Prerequisites</h2>
-        <ul>
+        <ul></ul>
             <li>🖥️ Node.js v18+ installed</li>
             <li>🤖 Ollama running locally</li>
             <li>📦 At least 8GB free memory</li>
@@ -166,7 +229,7 @@
         </ul>
     </div>
 
-    <div class="step">
+    <div class="step"></div>
         <h3>🛠️ Step 1: System Setup</h3>
         <pre><code class="language-bash"># Install Node.js (using nvm recommended)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
@@ -256,6 +319,26 @@ ollama list</code></pre>
 
     <footer>
         <p>© 2024 AI Automation Guide | MIT License</p>
+        <div class="social-links">
+            <a href="https://github.com">GitHub</a>
+            <a href="https://twitter.com">Twitter</a>
+            <a href="https://discord.com">Discord</a>
+        </div>
     </footer>
+
+    <script>
+        function toggleTheme() {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Initialize theme from localStorage
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
 </body>
 </html>
