@@ -427,14 +427,22 @@ ollama list</code></pre>
             }, 5000); // Reduced to 5 seconds
         }
 
-        // GitHub repository check with optimized intervals
+        // GitHub repository check with better messages
         async function checkGitHubUpdates() {
             const repo = 'Micknown/Stagehand-Set-Up-Html';
             const url = `https://api.github.com/repos/${repo}/events`;
             let lastCheckedTime = Date.now();
             
-            // Show welcome message once
-            showNotification(`🔍 Monitoring ${repo}`, false);
+            // Show sequence of informative startup messages
+            showNotification(`🔍 Now monitoring: ${repo}`, false);
+            
+            setTimeout(() => {
+                showNotification('📡 Updates will appear here when changes are pushed to GitHub', false);
+            }, 6000);
+            
+            setTimeout(() => {
+                showNotification('⚡ Live updates are enabled - watching for new commits...', false);
+            }, 12000);
 
             setInterval(async () => {
                 try {
