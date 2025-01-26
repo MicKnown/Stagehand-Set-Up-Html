@@ -433,8 +433,11 @@ ollama list</code></pre>
             const url = `https://api.github.com/repos/${repo}/events`;
             let lastCheckedTime = Date.now();
             
-            // Show initial status once
-            showNotification('🔍 Started monitoring repository');
+            // Show prominent initial status with more details
+            showNotification(`🔍 Now monitoring: ${repo} repository for live updates`, false);
+            setTimeout(() => {
+                showNotification('Updates will appear here when changes are pushed to GitHub', false);
+            }, 6000); // Show second message after first one
 
             setInterval(async () => {
                 try {
@@ -462,8 +465,11 @@ ollama list</code></pre>
             }, 30000); // Check every 30 seconds instead of 10
         }
 
-        // Start monitoring GitHub updates
-        checkGitHubUpdates();
+        // Start everything when page loads
+        window.addEventListener('load', () => {
+            checkGitHubUpdates();
+            setupCommitMessageMonitor();
+        });
 
         // Add this new function to listen for Git commit message changes
         function setupCommitMessageMonitor() {
