@@ -373,31 +373,38 @@ ollama list</code></pre>
             }, 5000);
         }
 
-        // GitHub webhook event listener
-        async function setupGitHubWebhook() {
-            if ('Notification' in window) {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    // Setup EventSource for Server-Sent Events
-                    const evtSource = new EventSource('/github-webhook');
+        // GitHub repository check
+        async function checkGitHubUpdates() {
+            const repo = 'YourUsername/Stagehand-Set-Up-Html'; // Replace with your actual username
+            const url = `https://api.github.com/repos/${repo}/events`;
+            
+            let lastCheckedTime = Date.now();
+
+            setInterval(async () => {
+                try {
+                    const response = await fetch(url);
+                    const events = await response.json();
                     
-                    evtSource.onmessage = (event) => {
-                        const data = JSON.parse(event.data);
-                        if (data.type === 'push') {
-                            showNotification(`Repository updated: ${data.message}`);
-                            // Show system notification
-                            new Notification('GitHub Update', {
-                                body: data.message,
-                                icon: '/path/to/your/icon.png' // Optional: Add your icon
-                            });
-                        }
-                    };
+                    const pushEvents = events.filter(event => 
+                        event.type === 'PushEvent' && 
+                        new Date(event.created_at).getTime() > lastCheckedTime
+                    );
+
+                    if (pushEvents.length > 0) {
+                        const latestPush = pushEvents[0];
+                        const message = `Repository updated: ${latestPush.payload.commits[0].message}`;
+                        showNotification(message);
+                    }
+
+                    lastCheckedTime = Date.now();
+                } catch (error) {
+                    console.error('Error checking updates:', error);
                 }
-            }
+            }, 30000); // Check every 30 seconds
         }
 
-        // Initialize webhook listener
-        setupGitHubWebhook();
+        // Start monitoring GitHub updates
+        checkGitHubUpdates();
     </script>
 </body>
 </html>
