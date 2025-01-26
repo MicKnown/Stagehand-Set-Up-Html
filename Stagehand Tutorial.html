@@ -367,18 +367,27 @@ ollama list</code></pre>
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
-        // Update the notification system
-        function showNotification(message) {
+        // Enhanced notification system with commit details
+        function showNotification(message, isCommit = false) {
             const banner = document.getElementById('banner-notification');
+            
+            // Style commit messages differently
+            if (isCommit) {
+                message = `🔄 Latest Update: ${message}`;
+                banner.style.background = 'linear-gradient(45deg, #10b981, #3b82f6)';  // Success gradient
+            } else {
+                banner.style.background = 'linear-gradient(45deg, var(--primary), var(--secondary))';
+            }
+            
             banner.textContent = message;
             banner.classList.add('show');
             
             setTimeout(() => {
                 banner.classList.remove('show');
-            }, 5000);
+            }, 8000); // Show commit messages longer
         }
 
-        // GitHub repository check for public repository
+        // GitHub repository check with commit message tracking
         async function checkGitHubUpdates() {
             const repo = 'Micknown/Stagehand-Set-Up-Html';
             const url = `https://api.github.com/repos/${repo}/events`;
@@ -405,14 +414,21 @@ ollama list</code></pre>
                     if (pushEvents.length > 0) {
                         const latestPush = pushEvents[0];
                         if (latestPush.payload.commits && latestPush.payload.commits.length > 0) {
-                            const commitMessage = latestPush.payload.commits[0].message;
+                            const commits = latestPush.payload.commits;
                             const author = latestPush.actor.login;
-                            showNotification(`📝 New commit by ${author}: ${commitMessage}`);
+                            
+                            // Show each commit message
+                            commits.forEach((commit, index) => {
+                                setTimeout(() => {
+                                    const message = `${author}: "${commit.message}"`;
+                                    showNotification(message, true);
+                                }, index * 9000); // Stagger notifications if multiple commits
+                            });
                         }
                     }
 
                     lastCheckedTime = Date.now();
-                    retryCount = 0; // Reset retry count on success
+                    retryCount = 0;
                 } catch (error) {
                     console.error('GitHub API Error:', error);
                     retryCount++;
