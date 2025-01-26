@@ -427,29 +427,35 @@ ollama list</code></pre>
             }, 5000); // Reduced to 5 seconds
         }
 
-        // GitHub repository check with better messages
+        // GitHub repository check with working commit notifications
         async function checkGitHubUpdates() {
             const repo = 'Micknown/Stagehand-Set-Up-Html';
             const url = `https://api.github.com/repos/${repo}/events`;
             let lastCheckedTime = Date.now();
             
-            // Show sequence of informative startup messages
+            // Keep the great startup messages
             showNotification(`🔍 Now monitoring: ${repo}`, false);
-            
             setTimeout(() => {
                 showNotification('📡 Updates will appear here when changes are pushed to GitHub', false);
             }, 6000);
-            
             setTimeout(() => {
                 showNotification('⚡ Live updates are enabled - watching for new commits...', false);
             }, 12000);
 
+            // Check for updates more frequently
             setInterval(async () => {
                 try {
-                    const response = await fetch(url);
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const events = await response.json();
                     
+                    // Look for very recent events
                     const newEvents = events.filter(event => 
                         event.type === 'PushEvent' && 
                         new Date(event.created_at).getTime() > lastCheckedTime
@@ -459,8 +465,8 @@ ollama list</code></pre>
                         const latestPush = newEvents[0];
                         if (latestPush.payload.commits?.length > 0) {
                             const commit = latestPush.payload.commits[0];
-                            // Show commit message in banner for 5 seconds
                             showNotification(`${latestPush.actor.login}: "${commit.message}"`, true);
+                            console.log('New commit detected:', commit.message); // Debug log
                         }
                     }
 
@@ -468,7 +474,7 @@ ollama list</code></pre>
                 } catch (error) {
                     console.error('GitHub API Error:', error);
                 }
-            }, 30000);
+            }, 15000); // Check every 15 seconds instead of 30
         }
 
         // Start monitoring when page loads
