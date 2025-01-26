@@ -210,6 +210,25 @@
             font-size: 1.2rem;
             color: var(--text);
         }
+
+        /* Add notification styles */
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: var(--text);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+            transform: translateY(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -326,6 +345,9 @@ ollama list</code></pre>
         </div>
     </footer>
 
+    <!-- Add notification container before closing body tag -->
+    <div id="notification" class="notification"></div>
+
     <script>
         function toggleTheme() {
             const root = document.documentElement;
@@ -339,6 +361,43 @@ ollama list</code></pre>
         // Initialize theme from localStorage
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Notification system
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // GitHub webhook event listener
+        async function setupGitHubWebhook() {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    // Setup EventSource for Server-Sent Events
+                    const evtSource = new EventSource('/github-webhook');
+                    
+                    evtSource.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'push') {
+                            showNotification(`Repository updated: ${data.message}`);
+                            // Show system notification
+                            new Notification('GitHub Update', {
+                                body: data.message,
+                                icon: '/path/to/your/icon.png' // Optional: Add your icon
+                            });
+                        }
+                    };
+                }
+            }
+        }
+
+        // Initialize webhook listener
+        setupGitHubWebhook();
     </script>
 </body>
 </html>
