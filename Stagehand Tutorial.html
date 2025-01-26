@@ -230,6 +230,11 @@
         .banner-notification.show {
             transform: translateY(0);
         }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
     </style>
 </head>
 <body>
@@ -243,7 +248,7 @@
 
     <div class="prerequisites">
         <h2>🎯 Prerequisites</h2>
-        <ul></ul>
+        <ul>
             <li>🖥️ Node.js v18+ installed</li>
             <li>🤖 Ollama running locally</li>
             <li>📦 At least 8GB free memory</li>
@@ -251,7 +256,7 @@
         </ul>
     </div>
 
-    <div class="step"></div>
+    <div class="step">
         <h3>🛠️ Step 1: System Setup</h3>
         <pre><code class="language-bash"># Install Node.js (using nvm recommended)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
@@ -379,8 +384,9 @@ ollama list</code></pre>
             const url = `https://api.github.com/repos/${repo}/events`;
             
             let lastCheckedTime = Date.now();
+            let retryCount = 0;
+            const maxRetries = 3;
             
-            // Show initial status
             showNotification('🔍 Monitoring repository updates...');
 
             setInterval(async () => {
@@ -398,17 +404,24 @@ ollama list</code></pre>
 
                     if (pushEvents.length > 0) {
                         const latestPush = pushEvents[0];
-                        const commitMessage = latestPush.payload.commits[0].message;
-                        const author = latestPush.actor.login;
-                        showNotification(`📝 New commit by ${author}: ${commitMessage}`);
+                        if (latestPush.payload.commits && latestPush.payload.commits.length > 0) {
+                            const commitMessage = latestPush.payload.commits[0].message;
+                            const author = latestPush.actor.login;
+                            showNotification(`📝 New commit by ${author}: ${commitMessage}`);
+                        }
                     }
 
                     lastCheckedTime = Date.now();
+                    retryCount = 0; // Reset retry count on success
                 } catch (error) {
                     console.error('GitHub API Error:', error);
-                    showNotification('⚠️ Error checking updates');
+                    retryCount++;
+                    if (retryCount >= maxRetries) {
+                        showNotification('⚠️ Error checking updates - will retry in 30s');
+                        retryCount = 0;
+                    }
                 }
-            }, 10000); // Check every 10 seconds
+            }, 10000);
         }
 
         // Start monitoring GitHub updates
