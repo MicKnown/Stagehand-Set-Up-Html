@@ -235,6 +235,41 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
+
+        .commit-preview {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 8px;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--accent);
+            z-index: 1000;
+            display: none;
+        }
+
+        .commit-preview.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100%); }
+            to { transform: translate(-50%, 0); }
+        }
+
+        .commit-preview h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent);
+        }
+
+        .commit-message {
+            color: var(--text);
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+        }
     </style>
 </head>
 <body>
@@ -353,6 +388,11 @@ ollama list</code></pre>
         </div>
     </footer>
 
+    <div id="commit-preview" class="commit-preview">
+        <h4>📝 Current Commit Message:</h4>
+        <p id="commit-message" class="commit-message"></p>
+    </div>
+
     <script>
         function toggleTheme() {
             const root = document.documentElement;
@@ -367,14 +407,14 @@ ollama list</code></pre>
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
-        // Enhanced notification system with commit details
+        // Enhanced notification system with shorter duration
         function showNotification(message, isCommit = false) {
             const banner = document.getElementById('banner-notification');
             
             // Style commit messages differently
             if (isCommit) {
                 message = `🔄 Latest Update: ${message}`;
-                banner.style.background = 'linear-gradient(45deg, #10b981, #3b82f6)';  // Success gradient
+                banner.style.background = 'linear-gradient(45deg, #10b981, #3b82f6)';
             } else {
                 banner.style.background = 'linear-gradient(45deg, var(--primary), var(--secondary))';
             }
@@ -384,64 +424,84 @@ ollama list</code></pre>
             
             setTimeout(() => {
                 banner.classList.remove('show');
-            }, 8000); // Show commit messages longer
+            }, 5000); // Reduced to 5 seconds
         }
 
-        // GitHub repository check with commit message tracking
+        // GitHub repository check with optimized intervals
         async function checkGitHubUpdates() {
             const repo = 'Micknown/Stagehand-Set-Up-Html';
             const url = `https://api.github.com/repos/${repo}/events`;
-            
             let lastCheckedTime = Date.now();
-            let retryCount = 0;
-            const maxRetries = 3;
             
-            showNotification('🔍 Monitoring repository updates...');
+            // Show initial status once
+            showNotification('🔍 Started monitoring repository');
 
             setInterval(async () => {
                 try {
                     const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     const events = await response.json();
                     
-                    const pushEvents = events.filter(event => 
+                    const newEvents = events.filter(event => 
                         event.type === 'PushEvent' && 
                         new Date(event.created_at).getTime() > lastCheckedTime
                     );
 
-                    if (pushEvents.length > 0) {
-                        const latestPush = pushEvents[0];
-                        if (latestPush.payload.commits && latestPush.payload.commits.length > 0) {
-                            const commits = latestPush.payload.commits;
-                            const author = latestPush.actor.login;
-                            
-                            // Show each commit message
-                            commits.forEach((commit, index) => {
-                                setTimeout(() => {
-                                    const message = `${author}: "${commit.message}"`;
-                                    showNotification(message, true);
-                                }, index * 9000); // Stagger notifications if multiple commits
-                            });
+                    if (newEvents.length > 0) {
+                        const latestPush = newEvents[0];
+                        if (latestPush.payload.commits?.length > 0) {
+                            const commit = latestPush.payload.commits[0];
+                            showNotification(`${latestPush.actor.login}: "${commit.message}"`, true);
                         }
                     }
 
                     lastCheckedTime = Date.now();
-                    retryCount = 0;
                 } catch (error) {
                     console.error('GitHub API Error:', error);
-                    retryCount++;
-                    if (retryCount >= maxRetries) {
-                        showNotification('⚠️ Error checking updates - will retry in 30s');
-                        retryCount = 0;
-                    }
                 }
-            }, 10000);
+            }, 30000); // Check every 30 seconds instead of 10
         }
 
         // Start monitoring GitHub updates
         checkGitHubUpdates();
+
+        // Add this new function to listen for Git commit message changes
+        function setupCommitMessageMonitor() {
+            const commitPreview = document.getElementById('commit-preview');
+            const commitMessage = document.getElementById('commit-message');
+            
+            // Function to check for Git commit message
+            function checkGitCommitMessage() {
+                try {
+                    // Check the .git/COMMIT_EDITMSG file content
+                    fetch('/.git/COMMIT_EDITMSG')
+                        .then(response => response.text())
+                        .then(text => {
+                            if (text && text.trim()) {
+                                commitMessage.textContent = text.trim();
+                                commitPreview.classList.add('show');
+                                
+                                // Hide after 10 seconds
+                                setTimeout(() => {
+                                    commitPreview.classList.remove('show');
+                                }, 10000);
+                            }
+                        })
+                        .catch(() => {
+                            // File might not exist yet, that's okay
+                            commitPreview.classList.remove('show');
+                        });
+                } catch (error) {
+                    console.log('No commit message yet');
+                }
+            }
+
+            // Check every second for changes
+            setInterval(checkGitCommitMessage, 1000);
+        }
+
+        // Initialize commit message monitor
+        setupCommitMessageMonitor();
     </script>
 </body>
 </html>
