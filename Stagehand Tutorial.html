@@ -433,11 +433,8 @@ ollama list</code></pre>
             const url = `https://api.github.com/repos/${repo}/events`;
             let lastCheckedTime = Date.now();
             
-            // Show prominent initial status with more details
-            showNotification(`🔍 Now monitoring: ${repo} repository for live updates`, false);
-            setTimeout(() => {
-                showNotification('Updates will appear here when changes are pushed to GitHub', false);
-            }, 6000); // Show second message after first one
+            // Show welcome message once
+            showNotification(`🔍 Monitoring ${repo}`, false);
 
             setInterval(async () => {
                 try {
@@ -454,6 +451,7 @@ ollama list</code></pre>
                         const latestPush = newEvents[0];
                         if (latestPush.payload.commits?.length > 0) {
                             const commit = latestPush.payload.commits[0];
+                            // Show commit message in banner for 5 seconds
                             showNotification(`${latestPush.actor.login}: "${commit.message}"`, true);
                         }
                     }
@@ -462,52 +460,11 @@ ollama list</code></pre>
                 } catch (error) {
                     console.error('GitHub API Error:', error);
                 }
-            }, 30000); // Check every 30 seconds instead of 10
+            }, 30000);
         }
 
-        // Start everything when page loads
-        window.addEventListener('load', () => {
-            checkGitHubUpdates();
-            setupCommitMessageMonitor();
-        });
-
-        // Add this new function to listen for Git commit message changes
-        function setupCommitMessageMonitor() {
-            const commitPreview = document.getElementById('commit-preview');
-            const commitMessage = document.getElementById('commit-message');
-            
-            // Function to check for Git commit message
-            function checkGitCommitMessage() {
-                try {
-                    // Check the .git/COMMIT_EDITMSG file content
-                    fetch('/.git/COMMIT_EDITMSG')
-                        .then(response => response.text())
-                        .then(text => {
-                            if (text && text.trim()) {
-                                commitMessage.textContent = text.trim();
-                                commitPreview.classList.add('show');
-                                
-                                // Hide after 10 seconds
-                                setTimeout(() => {
-                                    commitPreview.classList.remove('show');
-                                }, 10000);
-                            }
-                        })
-                        .catch(() => {
-                            // File might not exist yet, that's okay
-                            commitPreview.classList.remove('show');
-                        });
-                } catch (error) {
-                    console.log('No commit message yet');
-                }
-            }
-
-            // Check every second for changes
-            setInterval(checkGitCommitMessage, 1000);
-        }
-
-        // Initialize commit message monitor
-        setupCommitMessageMonitor();
+        // Start monitoring when page loads
+        window.addEventListener('load', checkGitHubUpdates);
     </script>
 </body>
 </html>
